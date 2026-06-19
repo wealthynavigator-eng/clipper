@@ -1,7 +1,7 @@
 import os
 import json
 from dotenv import load_dotenv
-from mistralai import Mistral
+from mistralai.client import Mistral
 from transcriber import transcribe_audio
 
 def find_clip_moments(segments: list) -> list:
