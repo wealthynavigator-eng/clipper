@@ -1,14 +1,14 @@
 import os
 import json
 from dotenv import load_dotenv
-from groq import Groq
+from mistralai import Mistral
 from transcriber import transcribe_audio
 
 def find_clip_moments(segments: list) -> list:
     "Find interesting moments in the transcription using Groq API"
 
     load_dotenv()
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    client = Mistral(api_key=os.environ.get("MISTRAL_API_KEY"))
 
     system_prompt = """
     You are a professional video editor specializing in virality optimization.
@@ -38,8 +38,8 @@ def find_clip_moments(segments: list) -> list:
         {"role": "user", "content": json.dumps(lean_segments)}
     ]
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+    response = client.chat.complete(
+        model="mistral-large-latest",
         messages=messages,
         response_format={"type": "json_object"}
     )
