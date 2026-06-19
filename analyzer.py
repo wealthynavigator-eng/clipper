@@ -17,9 +17,18 @@ def find_clip_moments(segments: list) -> list:
     The "reason" should be a brief explanation of why this moment is interesting.
     """
 
+    lean_segments = [
+        {
+            "start": round(s["start"], 2),
+            "end": round(s["end"], 2),
+            "text": s["text"].strip()
+        }
+        for s in segments
+    ]
+
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": json.dumps(segments)}
+        {"role": "user", "content": json.dumps(lean_segments)}
     ]
 
     response = client.chat.completions.create(
