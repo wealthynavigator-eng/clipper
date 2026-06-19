@@ -20,13 +20,26 @@ def transcribe_audio(filepath: str, language: str = "en") -> dict:
 
 if __name__ == "__main__":
     # Test block
-    test_file = "downloads/If I Started Over, This is Exactly How I'd Get Good at Guitar.webm"
-    result = transcribe_audio(test_file)
+    import os
 
-    if result.get("error"):
-        print(f"Error: {result['error']}")
+    downloads_dir = "downloads"
+    test_file = None
+
+    if os.path.exists(downloads_dir):
+        for filename in os.listdir(downloads_dir):
+            if filename.endswith((".webm", ".mp4")):
+                test_file = os.path.join(downloads_dir, filename)
+                break
+
+    if not test_file:
+        print("Error: No .webm or .mp4 files found in the downloads directory")
     else:
-        print(f"Transcription: {result['text']}")
-        if result["segments"]:
-            print("First segment:")
-            print(result["segments"][0])
+        result = transcribe_audio(test_file)
+
+        if result.get("error"):
+            print(f"Error: {result['error']}")
+        else:
+            print(f"Transcription: {result['text']}")
+            if result["segments"]:
+                print("First segment:")
+                print(result["segments"][0])
