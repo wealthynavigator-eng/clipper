@@ -19,7 +19,11 @@ def slice_video(video_path: str, clips: list) -> list:
             "-i", video_path,
             "-ss", str(start),
             "-t", str(duration),
-            "-c", "copy",
+            "-c:v", "libx264",
+            "-crf", "23",
+            "-preset", "ultrafast",
+            "-c:a", "aac",
+            "-vf", "crop=ih*(9/16):ih",
             output_path,
             "-y"
         ]
