@@ -11,10 +11,12 @@ def find_clip_moments(segments: list) -> list:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
     system_prompt = """
-    You are a professional video editor specializing in retention optimization.
+    You are a professional video editor specializing in virality optimization.
     Analyze the transcription segments and identify exactly 2 or 3 elite clips
-    that last between 15 and 50 seconds each. Focus on finding explicit 'Hooks'
-    where a contrarian or high-value statement starts, like ignoring sheet music.
+    that last between 15 and 50 seconds each. Look for:
+    1. High-energy opening hooks or disruptive pattern-interrupt statements
+    2. Self-contained narrative arcs (a premise, an explanation, and a clear resolution/punchline)
+    3. Highly actionable insights or profound conclusions
     Map the end time to where that specific thought or payoff naturally concludes,
     merging adjacent text segments together. Return a strict JSON array of objects
     with keys: "start", "end", "hook_text", and "retention_strategy". The
