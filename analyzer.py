@@ -12,11 +12,13 @@ def find_clip_moments(transcription: dict) -> list:
 
     system_prompt = """
     You are a professional video editor specializing in virality optimization.
-    Analyze the transcription segments and identify exactly 2 or 3 elite clips
-    that last between 15 and 50 seconds each. Look for:
+    Analyze the transcription segments and identify between 5 to 10 distinct clip moments.
+    Each clip should have an average duration of 45-75 seconds. Look for:
     1. High-energy opening hooks or disruptive pattern-interrupt statements
     2. Self-contained narrative arcs (a premise, an explanation, and a clear resolution/punchline)
     3. Highly actionable insights or profound conclusions
+    Each clip MUST start at the exact beginning of a complete sentence or thought,
+    and must never cut a speaker off mid-word or mid-sentence at the start or end boundaries.
     Map the end time to where that specific thought or payoff naturally concludes,
     merging adjacent text segments together. Return a strict JSON array of objects
     with keys: "start", "end", "hook_text", and "retention_strategy". The
