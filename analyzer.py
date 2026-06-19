@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from mistralai.client import Mistral
 from transcriber import transcribe_audio
 
-def find_clip_moments(segments: list) -> list:
+def find_clip_moments(transcription: dict) -> list:
     "Find interesting moments in the transcription using Groq API"
 
     load_dotenv()
@@ -24,13 +24,18 @@ def find_clip_moments(segments: list) -> list:
     retention. Ensure the clips are spaced appropriately throughout the content.
     """
 
+    if isinstance(transcription, dict) and "segments" in transcription:
+        segments = transcription["segments"]
+    else:
+        segments = transcription
+
     lean_segments = [
         {
-            "start": round(s["start"], 2),
-            "end": round(s["end"], 2),
-            "text": s["text"].strip()
+            "start": round(segment["start"], 2),
+            "end": round(segment["end"], 2),
+            "text": segment["text"].strip()
         }
-        for s in segments
+        for segment in segments
     ]
 
     messages = [
