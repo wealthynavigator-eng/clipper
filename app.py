@@ -59,33 +59,55 @@ def main():
 
     if len(sys.argv) > 1:
         url = sys.argv[1]
+        result = run_pipeline(url)
+
+        if result.get("error"):
+            print(f"Error: {result['error']}")
+        else:
+            print("Processing complete!")
+            print(f"Title: {result['download']['title']}")
+            print(f"Duration: {result['download']['duration_seconds']} seconds")
+
+            print("Clip moments:")
+            for i, clip in enumerate(result["clips"]):
+                print(f"Clip {i+1}:")
+                print(f"Start: {clip['start']}s")
+                print(f"End: {clip['end']}s")
+                if "hook_text" in clip:
+                    print(f"Hook: {clip['hook_text']}")
+                if "retention_strategy" in clip:
+                    print(f"Strategy: {clip['retention_strategy']}")
+
+            print("Output files:")
+            for path in result["output_paths"]:
+                print(f"- {path}")
     else:
         url = st.text_input("Enter video URL")
 
-    if url:
-        with st.spinner("Processing..."):
-            result = run_pipeline(url)
+        if url:
+            with st.spinner("Processing..."):
+                result = run_pipeline(url)
 
-            if result.get("error"):
-                st.error(f"Error: {result['error']}")
-            else:
-                st.success("Processing complete!")
-                st.write(f"Title: {result['download']['title']}")
-                st.write(f"Duration: {result['download']['duration_seconds']} seconds")
+                if result.get("error"):
+                    st.error(f"Error: {result['error']}")
+                else:
+                    st.success("Processing complete!")
+                    st.write(f"Title: {result['download']['title']}")
+                    st.write(f"Duration: {result['download']['duration_seconds']} seconds")
 
-                st.write("Clip moments:")
-                for i, clip in enumerate(result["clips"]):
-                    st.write(f"Clip {i+1}:")
-                    st.write(f"Start: {clip['start']}s")
-                    st.write(f"End: {clip['end']}s")
-                    if "hook_text" in clip:
-                        st.write(f"Hook: {clip['hook_text']}")
-                    if "retention_strategy" in clip:
-                        st.write(f"Strategy: {clip['retention_strategy']}")
+                    st.write("Clip moments:")
+                    for i, clip in enumerate(result["clips"]):
+                        st.write(f"Clip {i+1}:")
+                        st.write(f"Start: {clip['start']}s")
+                        st.write(f"End: {clip['end']}s")
+                        if "hook_text" in clip:
+                            st.write(f"Hook: {clip['hook_text']}")
+                        if "retention_strategy" in clip:
+                            st.write(f"Strategy: {clip['retention_strategy']}")
 
-                st.write("Output files:")
-                for path in result["output_paths"]:
-                    st.write(f"- {path}")
+                    st.write("Output files:")
+                    for path in result["output_paths"]:
+                        st.write(f"- {path}")
 
 if __name__ == "__main__":
     main()
