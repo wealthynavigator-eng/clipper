@@ -8,7 +8,7 @@ def transcribe_audio(filepath: str, language: str = "en") -> dict:
     try:
         raw_result = mlx_whisper.transcribe(
             filepath,
-            path_or_hf_repo="mlx-community/whisper-base"
+            path_or_hf_repo="mlx-community/whisper-base-mlx"
         )
         result["text"] = raw_result.get("text")
         result["segments"] = raw_result.get("segments")
