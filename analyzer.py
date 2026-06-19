@@ -11,10 +11,15 @@ def find_clip_moments(segments: list) -> list:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
     system_prompt = """
-    You are an expert video editor. Analyze the transcription segments and identify
-    interesting moments to clip. Return a raw JSON array of objects with "start",
-    "end", and "reason" keys. The "start" and "end" values should be in seconds.
-    The "reason" should be a brief explanation of why this moment is interesting.
+    You are a professional video editor specializing in retention optimization.
+    Analyze the transcription segments and identify exactly 2 or 3 elite clips
+    that last between 15 and 50 seconds each. Focus on finding explicit 'Hooks'
+    where a contrarian or high-value statement starts, like ignoring sheet music.
+    Map the end time to where that specific thought or payoff naturally concludes,
+    merging adjacent text segments together. Return a strict JSON array of objects
+    with keys: "start", "end", "hook_text", and "retention_strategy". The
+    "retention_strategy" should explain how this clip will maximize viewer
+    retention. Ensure the clips are spaced appropriately throughout the content.
     """
 
     lean_segments = [
