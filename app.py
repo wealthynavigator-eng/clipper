@@ -30,7 +30,7 @@ def run_pipeline(url: str) -> dict:
 
     # Analyze
     st.write("Finding clip moments...")
-    clip_moments = find_clip_moments(transcribe_result["segments"])
+    clip_moments = find_clip_moments(transcribe_result)
     if not clip_moments:
         result["error"] = "No clip moments found"
         return result
