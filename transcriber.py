@@ -6,11 +6,13 @@ def transcribe_audio(filepath: str, language: str = "en") -> dict:
     result = {"error": None}
 
     try:
-        result["text"], result["segments"] = mlx_whisper.transcribe(
+        raw_result = mlx_whisper.transcribe(
             filepath,
             model="mlx-community/whisper-base",
             language=language
         )
+        result["text"] = raw_result.get("text")
+        result["segments"] = raw_result.get("segments")
     except Exception as e:
         result["error"] = str(e)
 
