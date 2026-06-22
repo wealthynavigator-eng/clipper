@@ -44,7 +44,8 @@ class Settings:
 
     @property
     def crop_filter(self) -> str:
-        return "crop=w='min(iw,ih*9/16)':h=ih"
+        ratio = self.crop_aspect.replace(":", "/")
+        return f"crop=w='min(iw,ih*{ratio})':h=ih"
 
     @property
     def loudnorm_filter(self) -> str | None:

@@ -4,27 +4,27 @@ import tempfile
 from unittest.mock import patch
 
 from config import settings
-from cutter import _escape_drawtext, slice_video
+from cutter import _escape_filter_path, slice_video
 
 
-class TestEscapeDrawtext:
+class TestEscapeFilterPath:
     def test_escapes_backslash(self) -> None:
-        assert _escape_drawtext("a\\b") == "a\\\\b"
+        assert _escape_filter_path("a\\b") == "a\\\\b"
 
     def test_escapes_colon(self) -> None:
-        assert _escape_drawtext("a:b") == "a\\:b"
+        assert _escape_filter_path("a:b") == "a\\:b"
 
     def test_escapes_both(self) -> None:
-        assert _escape_drawtext("a\\:b") == "a\\\\\\:b"
+        assert _escape_filter_path("a\\:b") == "a\\\\\\:b"
 
     def test_no_special_chars(self) -> None:
-        assert _escape_drawtext("hello world") == "hello world"
+        assert _escape_filter_path("hello world") == "hello world"
 
     def test_empty_string(self) -> None:
-        assert _escape_drawtext("") == ""
+        assert _escape_filter_path("") == ""
 
     def test_unicode_preserved(self) -> None:
-        assert _escape_drawtext("don\u2019t stop") == "don\u2019t stop"
+        assert _escape_filter_path("don\u2019t stop") == "don\u2019t stop"
 
 
 class TestSliceVideoCommandArgs:

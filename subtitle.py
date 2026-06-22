@@ -2,17 +2,19 @@ from typing import Any
 
 
 def _srt_time(seconds: float) -> str:
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    s = seconds % 60
-    return f"{h:02d}:{m:02d}:{s:06.3f}".replace(".", ",")
+    total_ms = int(round(seconds * 1000))
+    h, remainder = divmod(total_ms, 3600000)
+    m, remainder = divmod(remainder, 60000)
+    s, ms = divmod(remainder, 1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
 def _ass_time(seconds: float) -> str:
-    h = int(seconds // 3600)
-    m = int((seconds % 3600) // 60)
-    cs = int(round((seconds % 60) * 100))
-    return f"{h}:{m:02d}:{cs // 100:02d}.{cs % 100:02d}"
+    total_cs = int(round(seconds * 100))
+    h, remainder = divmod(total_cs, 360000)
+    m, remainder = divmod(remainder, 6000)
+    s, cs = divmod(remainder, 100)
+    return f"{h}:{m:02d}:{s:02d}.{cs:02d}"
 
 
 _StyleDict = dict[str, Any]

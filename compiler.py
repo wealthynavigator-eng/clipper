@@ -45,7 +45,8 @@ def _concat_lossless(clip_paths: list[str], output_path: str) -> str:
     with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
         concat_path = f.name
         for p in clip_paths:
-            f.write(f"file '{p}'\n")
+            escaped = p.replace("\\", "\\\\").replace("'", "\\'")
+            f.write(f"file '{escaped}'\n")
 
     try:
         cmd = [

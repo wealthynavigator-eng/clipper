@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from typing import Any
@@ -13,6 +14,14 @@ from cutter import slice_video
 from downloader import download_video
 from scanner import detect_scenes, refine_clips
 from transcriber import transcribe_audio
+
+
+def _cleanup_session() -> None:
+    tmp = st.session_state.pop("_uploaded_tmp", None)
+    if tmp and os.path.exists(tmp):
+        os.unlink(tmp)
+    for k in list(st.session_state.keys()):
+        del st.session_state[k]
 
 
 def _setup_sidebar() -> None:
@@ -105,14 +114,29 @@ def _normalize_clips(clip_moments: Any) -> Any:
     return clip_moments
 
 
+def _probe_duration(video_path: str) -> float:
+    cmd = [
+        "ffprobe", "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "csv=p=0",
+        video_path,
+    ]
+    try:
+        out = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=30).stdout.strip()
+        return float(out)
+    except Exception:
+        return 0
+
+
 def analyze_pipeline(video_path: str, is_local: bool = False) -> dict[str, Any]:
     result: dict[str, Any] = {"error": None}
 
     if is_local:
+        duration = _probe_duration(video_path)
         dl = {
             "title": os.path.splitext(os.path.basename(video_path))[0],
             "filepath": video_path,
-            "duration_seconds": 0,
+            "duration_seconds": duration,
         }
     else:
         with st.status("Downloading video...") as s:
@@ -237,8 +261,7 @@ def _input_phase() -> None:
                 with st.expander(f"**{r['title']}** — {r['clips']} clips"):
                     for p in r["paths"]:
                         st.code(p)
-            for k in list(st.session_state.keys()):
-                del st.session_state[k]
+            _cleanup_session()
             return
 
     source = st.radio("Source", ["URL", "Local file"], horizontal=True, key="source")
@@ -257,6 +280,7 @@ def _input_phase() -> None:
             shutil.copyfileobj(uploaded, tmp)
             tmp.close()
             video_path = tmp.name
+            st.session_state._uploaded_tmp = tmp.name
             is_local = True
 
     if video_path and st.button("Analyze", type="primary"):
@@ -332,7 +356,7 @@ def _done_phase() -> None:
         return
 
     reel_path = None
-    if settings.compile_reel and len(paths) > 1 and paths[-1].endswith("reel.mp4"):
+    if settings.compile_reel and len(paths) > 1:
         reel_path = paths.pop()
 
     n_clips = len(paths)
@@ -351,8 +375,7 @@ def _done_phase() -> None:
             st.code(path)
 
     if st.button("Start over", type="secondary"):
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
+        _cleanup_session()
         st.rerun()
 
 

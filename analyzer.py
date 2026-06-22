@@ -78,7 +78,15 @@ _PROVIDER_CLIENTS: dict[LLMProvider, tuple[Callable, Callable]] = {
 
 
 def _parse_response(response: Any) -> list:
-    return json.loads(response.choices[0].message.content)
+    if not response.choices:
+        raise ValueError("No choices in LLM response")
+    content = response.choices[0].message.content
+    if content is None:
+        raise ValueError("LLM response content is None")
+    parsed = json.loads(content)
+    if not isinstance(parsed, list):
+        raise ValueError(f"Expected JSON array from LLM, got {type(parsed).__name__}")
+    return parsed
 
 
 _SYSTEM_PROMPT = """
@@ -125,10 +133,12 @@ def find_clip_moments(
         max_dur=int(settings.clip_max_duration),
     )
 
-    if isinstance(transcription, dict) and "segments" in transcription:
-        segments = transcription["segments"]
+    if isinstance(transcription, dict):
+        segments = transcription.get("segments")
+        if segments is None:
+            raise ValueError("Transcription result has no 'segments' key")
     else:
-        segments = transcription
+        raise ValueError(f"Expected dict transcription, got {type(transcription).__name__}")
 
     lean_segments = [
         {
@@ -144,7 +154,7 @@ def find_clip_moments(
         {"role": "user", "content": json.dumps(lean_segments)},
     ]
 
-    exceptions = (MistralError, httpx.HTTPError, json.JSONDecodeError, KeyError)
+    exceptions = (MistralError, httpx.HTTPError, json.JSONDecodeError)
 
     max_retries = 3
     for attempt in range(max_retries):
@@ -155,6 +165,7 @@ def find_clip_moments(
             if attempt == max_retries - 1:
                 raise
             time.sleep(2**attempt)
+
     return []
 
 
@@ -178,6 +189,6 @@ if __name__ == "__main__":
         if result.get("error"):
             print(f"Error: {result['error']}")
         else:
-            clip_moments = find_clip_moments(result["segments"])
+            clip_moments = find_clip_moments(result)
             print("Clip moments:")
             print(json.dumps(clip_moments, indent=2))

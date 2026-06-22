@@ -32,28 +32,25 @@ def _extract_audio_chunk(input_path: str, start: float, duration: float, output_
         output_path,
         "-y",
     ]
-    subprocess.run(cmd, check=True, timeout=7200, capture_output=True)
+    subprocess.run(cmd, check=True, timeout=600, capture_output=True)
 
 
 def _merge_chunks(chunks: list[dict[str, Any]]) -> dict[str, Any]:
     text_parts: list[str] = []
     all_segments: list[dict[str, Any]] = []
-    offset = 0.0
 
     for raw in chunks:
         text = raw.get("text")
         if text:
             text_parts.append(text)
 
+        offset = raw.get("_chunk_offset", 0.0)
         segments = raw.get("segments") or []
         for seg in segments:
             seg = dict(seg)
             seg["start"] += offset
             seg["end"] += offset
             all_segments.append(seg)
-
-        if segments:
-            offset = max(s["end"] for s in segments) + offset
 
     return {"text": " ".join(text_parts), "segments": all_segments}
 
@@ -87,6 +84,7 @@ def transcribe_audio(filepath: str, language: str = "en") -> dict[str, Any]:
             tmp_paths.append(tmp.name)
             _extract_audio_chunk(filepath, start, chunk_len, tmp.name)
             raw = mlx_whisper.transcribe(tmp.name, path_or_hf_repo="mlx-community/whisper-base-mlx")
+            raw["_chunk_offset"] = start
             chunks.append(raw)
             start += chunk_len
 

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
@@ -21,22 +22,26 @@ Clip = dict[str, Any]
 Segment = dict[str, Any]
 
 
-def _escape_drawtext(text: str) -> str:
-    return text.replace("\\", "\\\\").replace(":", "\\:")
+def _escape_filter_path(path: str) -> str:
+    return path.replace("\\", "\\\\").replace(":", "\\:")
 
 
-def _hook_filter(clip: Clip, duration: float) -> str | None:
+def _hook_filter(clip: Clip, duration: float) -> tuple[str, str | None] | None:
     hook_text = clip.get("hook_text", "")
     if not hook_text or not settings.hook_overlay:
         return None
     hook_dur = min(settings.hook_duration, duration)
-    escaped = _escape_drawtext(hook_text)
     font_part = f":fontfile={_DEFAULT_FONT}" if _DEFAULT_FONT else ""
+    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False)
+    tmp.write(hook_text)
+    tmp.close()
+    escaped_path = _escape_filter_path(tmp.name)
     return (
-        f"drawtext=text='{escaped}'{font_part}"
+        f"drawtext=textfile={escaped_path}{font_part}"
         ":fontsize=28:fontcolor=white:box=1:boxcolor=black@0.6"
         ":x=(w-text_w)/2:y=20"
-        f":enable='between(t,0,{hook_dur})'"
+        f":enable='between(t,0,{hook_dur})'",
+        tmp.name,
     )
 
 
@@ -93,9 +98,11 @@ def slice_video(
                 f"fade=t=out:st={duration-settings.fade_duration}:d={settings.fade_duration}"
             )
 
-        hook = _hook_filter(clip, duration)
-        if hook:
-            video_filters.append(hook)
+        hook_result = _hook_filter(clip, duration)
+        hook_tmp: str | None = None
+        if hook_result:
+            hook_filter, hook_tmp = hook_result
+            video_filters.append(hook_filter)
 
         sub_path = None
         if segments:
@@ -104,7 +111,7 @@ def slice_video(
                 os.path.join(output_dir, f"clip_{i+1}"),
                 style=sub_style,
             )
-            video_filters.append(f"subtitles={sub_path}")
+            video_filters.append(f"subtitles={_escape_filter_path(sub_path)}")
 
         af_src = "[0:a]"
         af_chain = [f for f in [settings.loudnorm_filter] if f]
@@ -185,6 +192,8 @@ def slice_video(
         finally:
             if sub_path and os.path.exists(sub_path):
                 os.unlink(sub_path)
+            if hook_tmp and os.path.exists(hook_tmp):
+                os.unlink(hook_tmp)
 
     paths: list[tuple[int, str]] = []
     max_workers = min(settings.parallel_workers, 2)
