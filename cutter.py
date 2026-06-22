@@ -168,13 +168,14 @@ def slice_video(
         cmd += [
             "-c:v", "libx264",
             "-crf", "23",
-            "-preset", "ultrafast",
+            "-preset", "fast",
             "-c:a", "aac",
+            "-max_muxing_queue_size", "1024",
             output_path, "-y",
         ]
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True)
+            subprocess.run(cmd, check=True, timeout=7200, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
             if settings.thumbnail:
                 generate_thumbnail(i, video_path, start, duration, clip.get("hook_text", ""), output_dir)
             return (i, output_path)
@@ -186,7 +187,8 @@ def slice_video(
                 os.unlink(sub_path)
 
     paths: list[tuple[int, str]] = []
-    with ThreadPoolExecutor(max_workers=settings.parallel_workers) as executor:
+    max_workers = min(settings.parallel_workers, 2)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(_process, i, clip): i
             for i, clip in enumerate(clips)

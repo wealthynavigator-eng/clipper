@@ -1,0 +1,14 @@
+.aider*
+.env
+__pycache__/
+downloads/
+output/
+*.mp4
+*.webm
+.venv/
+.DS_Store
+*.pyc
+*.pyo
+.idea/
+.vscode/
+models/

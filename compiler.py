@@ -32,7 +32,7 @@ def compile_clips(
 
     if len(clip_paths) == 1:
         cmd = ["ffmpeg", "-i", clip_paths[0], "-c", "copy", output_path, "-y"]
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, timeout=7200, capture_output=True)
         return output_path
 
     if transition == "cut":
@@ -54,7 +54,7 @@ def _concat_lossless(clip_paths: list[str], output_path: str) -> str:
             "-c", "copy",
             output_path, "-y",
         ]
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, timeout=7200, capture_output=True)
         return output_path
     finally:
         os.unlink(concat_path)
@@ -98,10 +98,11 @@ def _xfade_compile(
         "-filter_complex", filter_complex,
         "-map", f"[v{last_idx}]",
         "-map", f"[a{last_idx}]",
-        "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast",
+        "-c:v", "libx264", "-crf", "23", "-preset", "fast",
         "-c:a", "aac",
+        "-max_muxing_queue_size", "1024",
         output_path, "-y",
     ]
 
-    subprocess.run(cmd, check=True, capture_output=True)
+    subprocess.run(cmd, check=True, timeout=7200, capture_output=True)
     return output_path

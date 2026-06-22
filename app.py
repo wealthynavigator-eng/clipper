@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import tempfile
 from typing import Any
@@ -253,7 +254,7 @@ def _input_phase() -> None:
         uploaded = st.file_uploader("Upload video", type=["mp4", "webm", "mov", "avi", "mkv"], key="upload")
         if uploaded:
             tmp = tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded.name)[1])
-            tmp.write(uploaded.read())
+            shutil.copyfileobj(uploaded, tmp)
             tmp.close()
             video_path = tmp.name
             is_local = True

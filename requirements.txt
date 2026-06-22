@@ -1,0 +1,13 @@
+streamlit>=1.40
+yt-dlp>=2024
+mlx-whisper>=0.4
+mistralai>=2.0
+openai>=1.0
+httpx>=0.27
+opencv-python>=4.8
+opencv-contrib-python>=4.8
+mediapipe>=0.10
+scenedetect>=0.6
+python-dotenv>=1.0
+numpy>=1.24
+groq>=1.0

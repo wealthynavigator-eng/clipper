@@ -1,9 +1,12 @@
+from typing import Any
+
 import mlx_whisper
 
-def transcribe_audio(filepath: str, language: str = "en") -> dict:
+
+def transcribe_audio(filepath: str, language: str = "en") -> dict[str, Any]:
     "Transcribe audio using mlx_whisper"
 
-    result = {"error": None}
+    result: dict[str, Any] = {"error": None}
 
     try:
         raw_result = mlx_whisper.transcribe(
